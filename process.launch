@@ -7,6 +7,6 @@
     <node type="laser_scan_assembler" pkg="laser_assembler" name="my_assembler">
        <remap from="scan" to="scan_filtered"/>
        <param name="max_scans" type="int" value="1" />
-       <param name="fixed_frame" type="string" value="/base_link" />
+       <param name="fixed_frame" type="string" value="/odom_combined" />
     </node>
 </launch>
