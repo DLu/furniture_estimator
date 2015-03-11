@@ -20,6 +20,9 @@ def transform(pose, polar):
         new_pts.append((nx,ny))
     return new_pts    
 
+def transform_linear(pose, pts):
+    return transform(pose, [(atan2(y,x), hypot(x,y)) for x,y in pts])
+
 def find_best_transform(reference, cloud, pos):
     polar_ref = [(atan2(y,x), hypot(x,y)) for x,y in reference]
     
@@ -40,7 +43,7 @@ def find_best_transform(reference, cloud, pos):
                     if d < best:
                         best = d
                         fp = f
-                if fp!=0:
+                if fp!=0 and fp!=None:
                     changes+=1
                     pos[i] += delta * fp
     return pos

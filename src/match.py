@@ -4,23 +4,26 @@ from math import atan2, sin, cos, hypot, degrees
 from furniture_estimator import *
 from furniture_estimator.match import *
 
-REF = [(.88, -.12), (1.12, .21), (1.33, 0.13), (1.26, -0.27)]
-RX = sum([x[0] for x in REF])/len(REF)
-RY = sum([x[1] for x in REF])/len(REF)
-a1 = atan2( REF[1][1]-REF[0][1], REF[1][0]-REF[0][0])
-a2 = atan2( REF[-2][1]-REF[-1][1], REF[-2][0]-REF[-1][0])
-RZ = (a1+a2)/2
+import sys
+import yaml
 
-print RX,RY,degrees(RZ)
+model = yaml.load(open(sys.argv[1]))
+data = to_list(pickle.load(open(sys.argv[2])))
+should_plot = '-p' in sys.argv
 
-REF3 = [(-.2, .2), (.2, .11), (.2, -.11), (-.2, -.2)]
+SEED = [-2.0, 5.0, 0.4]
 
-full_cloud = to_list(pickle.load(open('laser.data')))
-
-SEED = [1.0, 0.0, 0.4]
-
-cloud = filter_cloud(full_cloud, SEED, 1.0)
-x,y,theta= find_best_transform(REF3, cloud, SEED)
+cloud = filter_cloud(data, SEED, 1.0)
+x,y,theta= find_best_transform(model, cloud, SEED)
 print x,y,degrees(theta)
 
+if should_plot:
 
+    from pylab import *
+
+    def plotp(pts, color='blue'):
+        plot([p[0] for p in pts], [p[1] for p in pts], 'o', color=color)
+
+    plotp(cloud)
+    plotp(transform_linear((x,y,theta),model), color='red')
+    show()    
