@@ -5,18 +5,19 @@ from laser_assembler.srv import *
 from furniture_estimator.match import *
 import tf
 import yaml
-from math import degrees
+import sys
+import os
 
 class Tracer:
-    def __init__(self, model, name):
-        self.model = model
-        self.name = name
+    def __init__(self):
+        self.model = rospy.get_param('~model')
+        self.name = rospy.get_param('~name')
 
         self.br = tf.TransformBroadcaster()
         rospy.wait_for_service("assemble_scans")
         self.assemble_scans = rospy.ServiceProxy('assemble_scans', AssembleScans)
 
-        self.pose = [1.0, 0.0, 0.4]
+        self.pose = rospy.get_param('~seed', [0,0,0])
 
     def estimate(self):
         resp = self.assemble_scans(rospy.Time(0,0), rospy.get_rostime())
@@ -40,8 +41,14 @@ class Tracer:
                              self.name,
                              self.base_frame)
             r.sleep()
-            
-model = yaml.load(open('data/chair.yaml'))
-rospy.init_node("test_client")
-t = Tracer(model, 'chair')
+
+rospy.init_node('laser_tracer')
+for arg in sys.argv[1:]:
+    if 'yaml' in arg:
+        model = yaml.load(open(arg))
+        rospy.set_param('~model', model)
+        name = os.path.splitext(os.path.split(arg)[-1])[0]
+        rospy.set_param('~name', name)
+
+t = Tracer()
 t.spin()
