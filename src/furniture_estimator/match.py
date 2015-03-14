@@ -1,16 +1,43 @@
 from math import atan2, sin, cos, hypot
 from furniture_estimator import *
 
-def distance(ref_pts, pts):
-    D = 0
-    for rpt in ref_pts:
-        dmin = 1E9
-        for pt in pts:
-            d = dist(rpt, pt)
+def match_clouds(model, cloud, max_a=0.1):
+    J = {}
+    for pt in model:
+        J[pt] = []
+    J[None] = []
+
+    D = {}
+    
+    for cpt in cloud:
+        dmin = 1E6
+        mpt = None
+        for pt in model:
+            d = dist(cpt, pt)
             if d < dmin:
                 dmin = d
-        D += dmin
-    return D
+                mpt = pt
+        if dmin < max_a:
+            J[mpt].append(cpt)
+        else:
+            J[None].append(cpt)
+        D[cpt] = dmin
+
+    score = 0.0
+    for pt in model:
+        X = J[ pt ]
+        if len(X)>0:
+            Y = [D[x] for x in X]
+            score += min(Y)
+        else:
+            dmin = d
+            for cpt in J[None]:
+                d = dist(cpt, pt)
+                if d < dmin:
+                    dmin = d
+            score += dmin        
+          
+    return score, J
 
 def transform(pose, polar):
     new_pts = []
@@ -39,7 +66,7 @@ def find_best_transform(reference, cloud, pos):
                     vn[i] += delta * f
 
                     pts = transform(vn, polar_ref)
-                    d = distance(pts, cloud)
+                    d, X = match_clouds(pts, cloud)
                     if d < best:
                         best = d
                         fp = f
