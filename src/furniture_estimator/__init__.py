@@ -12,3 +12,11 @@ def filter_cloud(cloud, seed, MAX_D=1.0):
 
 def to_list(cloud):
     return [(pt.x, pt.y) for pt in cloud]
+
+def avg(pts):
+    x0 = 0.0
+    y0 = 0.0
+    for x,y in pts:
+        x0 += x
+        y0 += y
+    return (x0/len(pts), y0/len(pts))
