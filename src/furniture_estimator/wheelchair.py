@@ -1,5 +1,6 @@
-from math import sin, cos
+from math import sin, cos, atan2, pi
 from furniture_estimator import *
+from furniture_estimator.kalman import *
 
 def filter_scan(scan, max_d=2.0, max_a=1.5, window=.05, plot=False):
     polar = []
@@ -39,3 +40,25 @@ def filter_scan(scan, max_d=2.0, max_a=1.5, window=.05, plot=False):
     rpt = avg(pts[1])
     return lpt, rpt
 
+class WheelchairFilter:
+    def __init__(self):
+        self.l_kalman = Kalman()
+        self.r_kalman = Kalman()
+
+    def update(self, scan):
+        lpt, rpt = filter_scan(scan)
+        self.l_kalman.update(lpt)
+        self.r_kalman.update(rpt)
+
+    def get_points(self):
+        return [self.l_kalman.values(), self.r_kalman.values()]    
+
+    def get_pose(self):
+        lpt, rpt = self.get_points()
+        pt = avg([lpt, rpt])
+        dx = lpt[0]-rpt[0]
+        dy = lpt[1]-rpt[1]
+        angle = atan2(dy,dx)
+
+        return pt[0], pt[1], angle-pi/2
+        
