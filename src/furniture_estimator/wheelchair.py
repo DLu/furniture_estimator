@@ -18,7 +18,6 @@ def filter_scan(scan, max_d=2.0, max_a=1.5, window=.05, plot=False):
 
     ds = [None, None]
     pts = [[], []]
-    xpts = [[], []]
     
     for d,angle in sorted(polar):
         x = d * cos(angle)
@@ -32,19 +31,9 @@ def filter_scan(scan, max_d=2.0, max_a=1.5, window=.05, plot=False):
 
         if ds[i] is None or ((d-ds[i])>window and len(pts[i])<5):
             ds[i] = d
-            xpts[i] += pts[i]
             pts[i] = []
         if d-ds[i] < window:
             pts[i].append(pt)
-        else:
-            xpts[i].append(pt)
-
-    if plot:
-        plotp(pts[0], color='blue')
-        plotp(pts[1], color='red')
-        plotp(xpts[0], color='green')
-        plotp(xpts[1], color='orange')
-        #show()
             
     lpt = avg(pts[0])
     rpt = avg(pts[1])
