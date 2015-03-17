@@ -1,32 +1,34 @@
 #!/usr/bin/python
-import rospy, rosbag
-import sys
-from pylab import *
+import rospy
 from furniture_estimator import *
 from furniture_estimator.wheelchair import *
-from math import degrees
+from sensor_msgs.msg import LaserScan
+import tf
 
-def plotp(pts, symbol='.', color='blue'):
-    plot([p[0] for p in pts], [p[1] for p in pts], symbol, color=color)
+class WheelchairNode:
+    def __init__(self):
+        rospy.init_node('wheelchair_monitor')
+        self.wf = WheelchairFilter()
+        self.br = tf.TransformBroadcaster()
+        self.sub = rospy.Subscriber('/base_scan', LaserScan, self.laser_cb)
+        self.frame = None
 
-bag = rosbag.Bag(sys.argv[1])
-pts = []
-wf = WheelchairFilter()
+    def laser_cb(self, msg):
+        self.frame = msg.header.frame_id
+        self.wf.update(msg)
 
-for a,b,c in bag.read_messages():
-    if a!='/base_scan':
-        continue
+    def spin(self):
+        r = rospy.Rate(10)
+        while not rospy.is_shutdown():
+            pose = self.wf.get_pose()
+            if pose:
+                self.br.sendTransform((pose[0], pose[1], 0),
+                             tf.transformations.quaternion_from_euler(0, 0, pose[2]),
+                             rospy.Time.now(),
+                             '/wheelchair',
+                             self.frame)
+            r.sleep()                 
 
-    wf.update(b)
-    x = wf.get_pose()
-    print x[0:2], degrees(x[2])
-
-    #plotp(pts, color='green', symbol='.')
-    #plotp( [la, ra], color='red')
-    #show()
-plotp(wf.get_points())
-plotp( [wf.get_pose()] )
-xlim(0,1)
-ylim(-0.5, 0.5)
-show()
-        
+if __name__ == '__main__':
+    n = WheelchairNode()
+    n.spin()

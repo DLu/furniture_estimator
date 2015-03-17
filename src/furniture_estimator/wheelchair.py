@@ -55,6 +55,8 @@ class WheelchairFilter:
 
     def get_pose(self):
         lpt, rpt = self.get_points()
+        if lpt is None:
+            return None
         pt = avg([lpt, rpt])
         dx = lpt[0]-rpt[0]
         dy = lpt[1]-rpt[1]
