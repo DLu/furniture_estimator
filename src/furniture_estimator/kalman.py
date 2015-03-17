@@ -7,6 +7,10 @@ class Kalman:
         self.P = P
         self.p = None
 
+    def reset(self):
+        self.x = None
+        self.p = None    
+
     def update(self, values):
         N = len(values)
         if self.x is None:

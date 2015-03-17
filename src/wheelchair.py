@@ -4,6 +4,7 @@ from furniture_estimator import *
 from furniture_estimator.wheelchair import *
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import PoseStamped
+from std_srvs.srv import *
 import tf
 
 class WheelchairNode:
@@ -13,17 +14,36 @@ class WheelchairNode:
         self.br = tf.TransformBroadcaster()
         self.tf = tf.TransformListener()
         self.sub = rospy.Subscriber('/base_scan', LaserScan, self.laser_cb)
+        self.srv1 = rospy.Service('~on', Empty, self.on)
+        self.srv2 = rospy.Service('~off', Empty, self.off)
+        self.active = False
         self.frame = None
         self.broadcast_frame = '/odom_combined'
 
     def laser_cb(self, msg):
+        if not self.active:
+            return
         self.frame = msg.header.frame_id
         self.wf.update(msg)
+
+    def on(self, req):
+        self.active = True
+        print "HI!"
+        self.wf.reset()
+        return EmptyResponse()
+
+    def off(self, req):
+        self.active = False   
+        return EmptyResponse()     
 
     def spin(self):
         r = rospy.Rate(10)
         while not rospy.is_shutdown():
             r.sleep()
+
+            if not self.active:
+                continue
+            
             pose = self.wf.get_pose()
             if not pose:
                 continue  

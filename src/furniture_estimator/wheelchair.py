@@ -51,7 +51,11 @@ class WheelchairFilter:
         self.r_kalman.update(rpt)
 
     def get_points(self):
-        return [self.l_kalman.values(), self.r_kalman.values()]    
+        return [self.l_kalman.values(), self.r_kalman.values()]
+
+    def reset(self):
+        self.l_kalman.reset()
+        self.r_kalman.reset()    
 
     def get_pose(self):
         lpt, rpt = self.get_points()
