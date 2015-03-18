@@ -13,10 +13,10 @@ class WheelchairNode:
         self.wf = WheelchairFilter()
         self.br = tf.TransformBroadcaster()
         self.tf = tf.TransformListener()
+        self.active = False
         self.sub = rospy.Subscriber('/base_scan', LaserScan, self.laser_cb)
         self.srv1 = rospy.Service('~on', Empty, self.on)
         self.srv2 = rospy.Service('~off', Empty, self.off)
-        self.active = False
         self.frame = None
         self.broadcast_frame = '/odom_combined'
 
