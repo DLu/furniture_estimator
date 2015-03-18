@@ -28,11 +28,12 @@ class WheelchairNode:
 
     def on(self, req):
         self.active = True
-        print "HI!"
+        rospy.loginfo('Wheelchair detector engaged')
         self.wf.reset()
         return EmptyResponse()
 
     def off(self, req):
+        rospy.loginfo('Wheelchair detector disengaged')
         self.active = False   
         return EmptyResponse()     
 
